@@ -14,10 +14,14 @@ public class Block : MonoBehaviour
         else return false;
     }
 
-    public void merge(GameObject other) {
-        Debug.Log("Merged");
-        Destroy(other);
-        gameObject.transform.localScale *= 2.0f;
-        level++;
+    public bool merge(GameObject other) {
+        if (other != gameObject)
+        {
+            Destroy(other);
+            gameObject.transform.localScale *= 2.0f;
+            level++;
+            return true;
+        }
+        else return false;
     }
 }
