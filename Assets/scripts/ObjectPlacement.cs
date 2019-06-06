@@ -36,7 +36,7 @@ public class ObjectPlacement : MonoBehaviour
     {
         if (!isOnCooldown)
         {
-            fillImage.fillAmount = 0f;
+            fillAmount = 0f;
             isOnCooldown = true;
         }
     }
@@ -56,9 +56,10 @@ public class ObjectPlacement : MonoBehaviour
         if (isOnCooldown)
         {
             float val = 1.0f / fillTime * Time.deltaTime;
-            if (fillImage.fillAmount + val <= 1.0f)
+            if (fillAmount + val <= 1.0f)
             {
-                fillImage.fillAmount += val;
+                fillAmount += val;
+                fillImage.fillAmount =fillAmount;
             }
             else
             {
@@ -75,7 +76,6 @@ public class ObjectPlacement : MonoBehaviour
                 if (!isCreatedDragging)
                 {
                     restoreObject(draggingObject, restorePoint);
-                    draggingObject = null;
                 }
                 else
                 {
@@ -155,7 +155,7 @@ public class ObjectPlacement : MonoBehaviour
 
                     //Else nothing to do
                 }
-                else if (hit.transform.parent.tag == "DockPoint")
+                else if (hit.transform.parent!=null&&hit.transform.parent.tag == "DockPoint")
                 {
                     Block block = draggingObject.GetComponent<Block>();
                     GameObject child = hit.transform.gameObject;
@@ -189,14 +189,35 @@ public class ObjectPlacement : MonoBehaviour
         }
         draggingObject.GetComponent<BoxCollider>().enabled = true;
         temp.y += 0.15f * block.level;
+        Debug.Log(temp);
         draggingObject.transform.position = temp;
         draggingObject = null;
     }
 
-
+    //Restore object to original position when right clicked
     void restoreObject(GameObject val, Vector3 restorePoint)
     {
         val.transform.position = restorePoint;
         val.GetComponent<BoxCollider>().enabled = true;
+    }
+
+    //Setup loaded blocks to docks
+    public int placeLoadedBlocks(string data) {
+        int val = 0;
+        string[] temp = data.Split('/');
+        for (int i = 0; i < temp.Length-1; i++)
+        {
+            string[] vals = temp[i].Split(',');
+            Vector3 pos = new Vector3(0, 0.15f * int.Parse(vals[2]), 0);
+            GameObject inst = Instantiate(cubePrefab, DockGenerator.docks[int.Parse(vals[0]), int.Parse(vals[1])].transform.GetChild(0));
+            inst.transform.localScale = new Vector3(0.166f,1f,0.166f);
+            inst.transform.position = inst.transform.parent.transform.position+pos;
+            inst.GetComponent<Block>().loadFromSave(int.Parse(vals[2]));
+            val += int.Parse(vals[2]);
+            PointGeneration.blocks.Add(inst.GetComponent<Block>());
+        }
+        //GameObject parent = DockGenerator.docks[int.Parse(temp[0]), int.Parse(temp[1])].transform.GetChild(0).gameObject;
+        draggingObject = null;
+        return val;
     }
 }

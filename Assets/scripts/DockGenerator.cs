@@ -7,7 +7,7 @@ public class DockGenerator : MonoBehaviour
     [SerializeField]
     private GameObject parentObject;
 
-    private GameObject[,] docks;
+    public static GameObject[,] docks;
 
     public GameObject[,] Docks { get => docks; set => docks = value; }
 

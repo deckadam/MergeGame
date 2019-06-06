@@ -13,19 +13,26 @@ public class Block : MonoBehaviour
         else return false;
     }
 
-    public string getBlockName() {
-        return gameObject.transform.parent.transform.parent.name;
-    }
-
     public bool merge(GameObject other) {
         if (other != gameObject)
         {
-            Debug.Log(PointGeneration.blocks.Remove(other.GetComponent<Block>()));
             Destroy(other);
-            gameObject.transform.localScale *= 2.0f;
+            loadBlock(1);
             level++;
             return true;
         }
         else return false;
+    }
+
+    public void loadFromSave(int level) {
+        loadBlock(level-1);
+        this.level = level;
+    }
+
+    private void loadBlock(int level) {
+        for (int i = 0; i < level; i++)
+        {
+            gameObject.transform.localScale *= 2.0f;
+        }
     }
 }

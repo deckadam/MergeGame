@@ -18,32 +18,24 @@ public class PointGeneration : MonoBehaviour
 
     void Start()
     {
+        DateSave.setTimeToWait(timeToWait);
         blocks = new List<Block>();
 
         //Start point generation coroutine with timer
         StartCoroutine(generateWithTime());
         //Load last save time and block data
-        int result = DateSave.load();
-        if (result != -1)
-        {
-
-        }
-    }
-
-    //For saving data on editor mode
-    public void saveData() {
-        DateSave.save(System.DateTime.Now);
+        DateSave.load();
+      
     }
 
     //Coroutine for timed point generation
-    private int totalPoint;
+    public static int totalPoint;
     IEnumerator generateWithTime()
     {
         while (true)
         {
             foreach (Block block in blocks)
             {
-                Debug.Log(block.level);
                 totalPoint += block.level;
             }
             pointLabel.text = "Points = " + totalPoint.ToString();
@@ -51,7 +43,6 @@ public class PointGeneration : MonoBehaviour
         }
     }
 
-    //Save current state on quit (Not in editor mode)
     void OnApplicationQuit()
     {
         DateSave.save(System.DateTime.Now);
