@@ -6,7 +6,6 @@ public class Block : MonoBehaviour
 {
     public int level;
     public GameObject nextLevel;
-    public bool dragging=false;
 
     public bool isMergeble(GameObject temp) {
         Block block = temp.GetComponent<Block>();
@@ -14,9 +13,14 @@ public class Block : MonoBehaviour
         else return false;
     }
 
+    public string getBlockName() {
+        return gameObject.transform.parent.transform.parent.name;
+    }
+
     public bool merge(GameObject other) {
         if (other != gameObject)
         {
+            Debug.Log(PointGeneration.blocks.Remove(other.GetComponent<Block>()));
             Destroy(other);
             gameObject.transform.localScale *= 2.0f;
             level++;

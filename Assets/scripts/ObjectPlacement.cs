@@ -12,6 +12,7 @@ public class ObjectPlacement : MonoBehaviour
     private GameObject cubePrefab;
 
     private Image fillImage;
+    [SerializeField]
     private float fillTime = 2;
     public static float fillAmount = 0;
     private bool isOnCooldown = true;
@@ -166,7 +167,6 @@ public class ObjectPlacement : MonoBehaviour
                 }
             }
         }
-
     }
 
     //Place selected object
@@ -176,16 +176,18 @@ public class ObjectPlacement : MonoBehaviour
         if (hit.transform.tag == "DockCube")
         {
             draggingObject.transform.parent = hit.transform.GetChild(0).transform;
-            draggingObject.GetComponent<BoxCollider>().enabled = true;
             temp = hit.transform.GetChild(0).transform.position;
         }
         else
         {
-
             draggingObject.transform.parent = hit.transform.parent;
-            draggingObject.GetComponent<BoxCollider>().enabled = true;
             temp = hit.transform.parent.transform.position;
         }
+        if (isCreatedDragging) {
+            PointGeneration.blocks.Add(block);
+            isCreatedDragging = false;
+        }
+        draggingObject.GetComponent<BoxCollider>().enabled = true;
         temp.y += 0.15f * block.level;
         draggingObject.transform.position = temp;
         draggingObject = null;

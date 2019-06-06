@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class DockGenerator : MonoBehaviour
 {
@@ -15,18 +13,19 @@ public class DockGenerator : MonoBehaviour
 
     void Start()
     {
-        docks = new GameObject[4,4];
+        docks = new GameObject[4, 4];
         for (int i = 0; i < 4; i++)
         {
             for (int j = 0; j < 4; j++)
             {
-                docks[i, j] = Instantiate(dockPrefab, new Vector3((i - 2) * 2, 0.25f, (j - 2) * 2),new Quaternion(0,0,0,0),parentObject.transform);
+                docks[i, j] = Instantiate(dockPrefab, new Vector3((i - 2) * 2, 0.15f, (j - 2) * 2), new Quaternion(0, 0, 0, 0), parentObject.transform);
+                docks[i, j].gameObject.name = i + ","+j;
             }
         }
     }
 
     void Update()
     {
-        
+
     }
 }
