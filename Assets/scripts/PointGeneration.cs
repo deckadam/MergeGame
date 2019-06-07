@@ -10,20 +10,17 @@ public class PointGeneration : MonoBehaviour
     private float timeToWait = 5.0f;
     [SerializeField]
     private Text pointLabel;
-    //For using on editor mode
-    [SerializeField]
-    private Button saveButton;
 
     public static List<Block> blocks;
 
     void Start()
     {
-        DateSave.setTimeToWait(timeToWait);
         blocks = new List<Block>();
 
         //Start point generation coroutine with timer
         StartCoroutine(generateWithTime());
         //Load last save time and block data
+        DateSave.setTimeToWait(timeToWait);
         DateSave.load();
       
     }

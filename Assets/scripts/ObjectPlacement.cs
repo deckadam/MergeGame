@@ -10,6 +10,8 @@ public class ObjectPlacement : MonoBehaviour
     private Camera mainCamera;
     [SerializeField]
     private GameObject cubePrefab;
+    [SerializeField]
+    private GameObject pSystem;
 
     private Image fillImage;
     [SerializeField]
@@ -17,6 +19,7 @@ public class ObjectPlacement : MonoBehaviour
     public static float fillAmount = 0;
     private bool isOnCooldown = true;
     private bool isCreatedDragging = false;
+    private ParticleControllerScript particleController;
 
     GameObject draggingObject;
     private RaycastHit hit;
@@ -29,12 +32,13 @@ public class ObjectPlacement : MonoBehaviour
         fillImage = buttonToFill.GetComponent<Image>();
         fillImage.fillAmount = fillAmount;
         isCreatedDragging = true;
+        particleController = pSystem.GetComponent<ParticleControllerScript>();
     }
 
     //Resting button to 0
     public void resetTimer()
     {
-        if (!isOnCooldown)
+        if (!isOnCooldown&& draggingObject==null)
         {
             fillAmount = 0f;
             isOnCooldown = true;
@@ -44,10 +48,13 @@ public class ObjectPlacement : MonoBehaviour
     //Creating new block with level 1 aspect
     public void createNewObject()
     {
-        isCreatedDragging = true;
-        draggingObject = Instantiate(cubePrefab);
-        draggingObject.transform.rotation = Quaternion.identity;
-        draggingObject.GetComponent<BoxCollider>().enabled = false;
+        if (draggingObject == null)
+        {
+            isCreatedDragging = true;
+            draggingObject = Instantiate(cubePrefab);
+            draggingObject.transform.rotation = Quaternion.identity;
+            draggingObject.GetComponent<BoxCollider>().enabled = false;
+        }
     }
 
     void Update()
@@ -59,7 +66,7 @@ public class ObjectPlacement : MonoBehaviour
             if (fillAmount + val <= 1.0f)
             {
                 fillAmount += val;
-                fillImage.fillAmount =fillAmount;
+                fillImage.fillAmount = fillAmount;
             }
             else
             {
@@ -144,6 +151,7 @@ public class ObjectPlacement : MonoBehaviour
                         else if (block.isMergeble(hit.transform.GetChild(0).transform.GetChild(0).gameObject))
                         {
                             block.merge(child.transform.GetChild(0).gameObject);
+                            particleController.playMergingParticlesAtPosition(block.transform.position);
                             placeDragging(block);
                         }
                     }
@@ -155,10 +163,11 @@ public class ObjectPlacement : MonoBehaviour
 
                     //Else nothing to do
                 }
-                else if (hit.transform.parent!=null&&hit.transform.parent.tag == "DockPoint")
+                else if (hit.transform.parent != null && hit.transform.parent.tag == "DockPoint")
                 {
                     Block block = draggingObject.GetComponent<Block>();
                     GameObject child = hit.transform.gameObject;
+                    Debug.Log(block.isMergeble(hit.transform.gameObject));
                     if (block.isMergeble(hit.transform.gameObject))
                     {
                         block.merge(child.transform.gameObject);
@@ -183,7 +192,8 @@ public class ObjectPlacement : MonoBehaviour
             draggingObject.transform.parent = hit.transform.parent;
             temp = hit.transform.parent.transform.position;
         }
-        if (isCreatedDragging) {
+        if (isCreatedDragging)
+        {
             PointGeneration.blocks.Add(block);
             isCreatedDragging = false;
         }
@@ -202,16 +212,17 @@ public class ObjectPlacement : MonoBehaviour
     }
 
     //Setup loaded blocks to docks
-    public int placeLoadedBlocks(string data) {
+    public int placeLoadedBlocks(string data)
+    {
         int val = 0;
         string[] temp = data.Split('/');
-        for (int i = 0; i < temp.Length-1; i++)
+        for (int i = 0; i < temp.Length - 1; i++)
         {
             string[] vals = temp[i].Split(',');
             Vector3 pos = new Vector3(0, 0.15f * int.Parse(vals[2]), 0);
             GameObject inst = Instantiate(cubePrefab, DockGenerator.docks[int.Parse(vals[0]), int.Parse(vals[1])].transform.GetChild(0));
-            inst.transform.localScale = new Vector3(0.166f,1f,0.166f);
-            inst.transform.position = inst.transform.parent.transform.position+pos;
+            inst.transform.localScale = new Vector3(0.166f, 1f, 0.166f);
+            inst.transform.position = inst.transform.parent.transform.position + pos;
             inst.GetComponent<Block>().loadFromSave(int.Parse(vals[2]));
             val += int.Parse(vals[2]);
             PointGeneration.blocks.Add(inst.GetComponent<Block>());

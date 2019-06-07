@@ -48,3 +48,6 @@ TagManager:
   - name: UILayer
     uniqueID: 3526831527
     locked: 0
+  - name: New Layer
+    uniqueID: 3260731329
+    locked: 0

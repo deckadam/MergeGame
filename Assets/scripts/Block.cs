@@ -1,38 +1,36 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Block : MonoBehaviour
 {
     public int level;
     public GameObject nextLevel;
+    public float scaleMultiplier;
 
-    public bool isMergeble(GameObject temp) {
+    public bool isMergeble(GameObject temp)
+    {
         Block block = temp.GetComponent<Block>();
-        if (block.level == this.level) return true;
+        if (block.level == this.level && temp != gameObject) return true;
         else return false;
     }
 
-    public bool merge(GameObject other) {
-        if (other != gameObject)
-        {
-            Destroy(other);
-            loadBlock(1);
-            level++;
-            return true;
-        }
-        else return false;
+    public void merge(GameObject other)
+    {
+        Destroy(other);
+        loadBlock(1);
+        level++;
     }
 
-    public void loadFromSave(int level) {
-        loadBlock(level-1);
+    public void loadFromSave(int level)
+    {
+        loadBlock(level - 1);
         this.level = level;
     }
 
-    private void loadBlock(int level) {
+    private void loadBlock(int level)
+    {
         for (int i = 0; i < level; i++)
         {
-            gameObject.transform.localScale *= 2.0f;
+            gameObject.transform.localScale *= scaleMultiplier;
         }
     }
 }

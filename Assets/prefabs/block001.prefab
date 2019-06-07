@@ -106,4 +106,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   level: 1
   nextLevel: {fileID: 0}
-  dragging: 0
+  scaleMultiplier: 1.2
