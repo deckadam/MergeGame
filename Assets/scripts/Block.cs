@@ -3,9 +3,7 @@
 public class Block : MonoBehaviour
 {
     public int level;
-    public GameObject nextLevel;
     public float scaleMultiplier;
-
     public bool isMergeble(GameObject temp)
     {
         Block block = temp.GetComponent<Block>();
@@ -30,7 +28,7 @@ public class Block : MonoBehaviour
     {
         for (int i = 0; i < level; i++)
         {
-            gameObject.transform.localScale *= scaleMultiplier;
+            transform.localScale *= scaleMultiplier;
         }
     }
 }

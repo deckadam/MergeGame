@@ -55,7 +55,6 @@ public static class DateSave
     //Restoring data when game loaded
     private static void restoreGame(string[] data, string timeVal, System.DateTime loadedTime)
     {
-
         //index1 block data
         ObjectPlacement placer = Resources.FindObjectsOfTypeAll<ObjectPlacement>()[0];
         int totalVal = placer.placeLoadedBlocks(data[1]);
@@ -73,7 +72,7 @@ public static class DateSave
         float leftOver = (float)timeDifference.TotalSeconds / timeToWait;
 
         //Extra time left from cycles transfered to buttons fill amount
-        ObjectPlacement.fillAmount = leftOver;
+        TimedSpawner.fillAmount = leftOver;
 
         //index2 total point calculation
         generatedPoint = totalVal * totalCycles;
