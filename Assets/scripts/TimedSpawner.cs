@@ -6,27 +6,23 @@ public class TimedSpawner : MonoBehaviour
 
     [SerializeField]
     private GameObject buttonToFill;
+
+    //For displaying dock status at buttons text
+    private Text textToShow;
     // Start is called before the first frame update
     void Start()
     {
         fillImage = buttonToFill.GetComponent<Image>();
         fillImage.fillAmount = fillAmount;
+        textToShow = buttonToFill.transform.GetChild(0).GetComponent<Text>();
+        fillTimeShared = fillTime;
     }
     private Image fillImage;
     [SerializeField]
     private float fillTime = 2;
+    public static float fillTimeShared;
     public static float fillAmount = 0;
-    private bool isOnCooldown = true;
 
-    //Resting button to 0
-    public void resetTimer()
-    {
-        if (!isOnCooldown && ObjectPlacement.draggingObject == null)
-        {
-            fillAmount = 0f;
-            isOnCooldown = true;
-        }
-    }
     // Update is called once per frame
     void Update()
     {
@@ -42,12 +38,12 @@ public class TimedSpawner : MonoBehaviour
             if (output)
             {
                 fillAmount = 0;
-                isOnCooldown = true;
+                textToShow.text = "New Building";
             }
             else
             {
                 fillAmount = 1.0f;
-                isOnCooldown = false;
+                textToShow.text = "Docks are full";
             }
         }
         fillImage.fillAmount = fillAmount;

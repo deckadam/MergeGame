@@ -49,6 +49,7 @@ public static class DateSave
             FileStream loadStream = new FileStream(loadPath, FileMode.Open);
             GameData data = formatter.Deserialize(loadStream) as GameData;
             restoreGame(data.getAllData(), data.timeVal, System.Convert.ToDateTime(data.timeVal));
+            loadStream.Close();
         }
     }
     public static int generatedPoint;
@@ -57,7 +58,8 @@ public static class DateSave
     {
         //index1 block data
         ObjectPlacement placer = Resources.FindObjectsOfTypeAll<ObjectPlacement>()[0];
-        int totalVal = placer.placeLoadedBlocks(data[1]);
+        int[] totalVal = placer.placeLoadedBlocks(data[1]);
+        BuyMenu.maxLevelReached = totalVal[1];
 
         //Cycle and leftover time calculation
         //index0 times passed
@@ -69,13 +71,24 @@ public static class DateSave
 
         int totalCycles = (int)timeDifference.TotalSeconds / (int)timeToWait;
 
+        int totalFillCycles = (int)timeDifference.TotalSeconds / (int)TimedSpawner.fillTimeShared;
+
+        //Place new blocks according to offline time
+        for (int i = 0; i < totalFillCycles; i++)
+        {
+            bool result = ObjectPlacement.insertNewBlock();
+            if (!result) break;
+        }
+
         float leftOver = (float)timeDifference.TotalSeconds / timeToWait;
+
+
 
         //Extra time left from cycles transfered to buttons fill amount
         TimedSpawner.fillAmount = leftOver;
 
         //index2 total point calculation
-        generatedPoint = totalVal * totalCycles;
+        generatedPoint = totalVal[0] * totalCycles;
         Object.FindObjectOfType<OfflineGeneratedPointDisplay>().setGeneratedPointText(generatedPoint);
         PointGeneration.totalPoint = generatedPoint + int.Parse(data[2]);
     }

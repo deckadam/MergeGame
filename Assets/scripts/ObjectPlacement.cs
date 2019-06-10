@@ -7,22 +7,17 @@ public class ObjectPlacement : MonoBehaviour
     private Camera mainCamera;
     [SerializeField]
     private GameObject cubePrefab;
-    [SerializeField]
-    private GameObject pSystem;
 
     private static GameObject startingPrefab;
-    private ParticleControllerScript particleController;
 
-    public static GameObject draggingObject;
+    private GameObject draggingObject;
     private RaycastHit hit;
     private Ray ray;
-    private Vector3 restorePoint;
 
     //Initing creation button
     void Start()
     {
         startingPrefab = cubePrefab;
-        particleController = pSystem.GetComponent<ParticleControllerScript>();
     }
 
     void Update()
@@ -34,13 +29,9 @@ public class ObjectPlacement : MonoBehaviour
         }
 
         //Reverse planting
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1) && draggingObject != null)
         {
-            if (draggingObject != null)
-            {
-                Debug.Log(restorePoint);
-                restoreObject(draggingObject, restorePoint);
-            }
+            restoreObject(draggingObject);
         }
 
         //Cast ray
@@ -50,10 +41,10 @@ public class ObjectPlacement : MonoBehaviour
             //Planting and merging operations
             processRaycast(hit);
         }
-
-
     }
 
+
+    //Insert new block if there is an empty dock available (Run through all if found place and return)
     public static bool insertNewBlock()
     {
         for (int i = 0; i < DockGenerator.spawnPoints.GetLength(0); i++)
@@ -64,8 +55,6 @@ public class ObjectPlacement : MonoBehaviour
                 {
                     GameObject newBlock = Instantiate(startingPrefab, DockGenerator.spawnPoints[i, j].transform);
                     newBlock.transform.rotation = Quaternion.identity;
-                    Vector3 pos = new Vector3(0, 0.15f, 0);
-                    newBlock.transform.position = newBlock.transform.parent.transform.position + pos;
                     PointGeneration.blocks.Add(newBlock.GetComponent<Block>());
                     return true;
                 }
@@ -86,19 +75,17 @@ public class ObjectPlacement : MonoBehaviour
     void ifClickedOnPlacementObject(RaycastHit hit)
     {
         Transform temp = hit.transform;
-        restorePoint = temp.position;
         draggingObject = temp.gameObject;
         draggingObject.GetComponent<BoxCollider>().enabled = false;
     }
 
-   
+
     //Set dragging object to clicked docks child block
     void ifClickedOnDockCube(RaycastHit hit)
     {
         Transform temp = hit.transform.GetChild(0).transform;
         if (temp.childCount != 0)
         {
-            restorePoint = temp.position;
             draggingObject = temp.GetChild(0).gameObject;
             disableBoxCollider();
         }
@@ -131,85 +118,109 @@ public class ObjectPlacement : MonoBehaviour
                     {
                         Block block = draggingObject.GetComponent<Block>();
                         GameObject child = hit.transform.GetChild(0).transform.gameObject;
+                        //If clicked on a empty dock place the cube
                         if (child.transform.childCount == 0)
                         {
-                            placeDragging(block);
+                            placeDraggingObject(block);
                         }
+                        //If clicked on a carrying dock merge if possible
                         else if (block.isMergeble(hit.transform.GetChild(0).transform.GetChild(0).gameObject))
                         {
-                            block.merge(child.transform.GetChild(0).gameObject);
-                            particleController.playMergingParticlesAtPosition(block.transform.position);
-                            placeDragging(block);
+                            mergeSelectedBlocks(child.transform.GetChild(0).gameObject, block);
                         }
                     }
                 }
+                //If clicked on a existing cube merge if possible
                 else if (hit.transform.parent != null && hit.transform.parent.tag == "DockPoint")
                 {
                     Block block = draggingObject.GetComponent<Block>();
                     GameObject child = hit.transform.gameObject;
-                    Debug.Log(block.isMergeble(hit.transform.gameObject));
                     if (block.isMergeble(hit.transform.gameObject))
                     {
-                        block.merge(child.transform.gameObject);
-                        placeDragging(block);
+                        mergeSelectedBlocks(child.transform.gameObject, block);
                     }
                 }
             }
         }
     }
 
-    //Place selected object
-    void placeDragging(Block block)
+    void placeDraggingObject(Block block)
     {
-        Vector3 temp;
-        if (hit.transform.tag == "DockCube")
-        {
-            draggingObject.transform.parent = hit.transform.GetChild(0).transform;
-            temp = hit.transform.GetChild(0).transform.position;
-        }
-        else
-        {
-            draggingObject.transform.parent = hit.transform.parent;
-            temp = hit.transform.parent.transform.position;
-        }
-        draggingObject.GetComponent<BoxCollider>().enabled = true;
-        temp.y += 0.15f * block.level;
-        Debug.Log(temp);
-        draggingObject.transform.position = temp;
+        block.gameObject.transform.parent = hit.transform.GetChild(0).transform;
+        block.setPosition();
+        draggingObject = null;
+    }
+
+    //Merge blocks, enable box collider and reset dragging object
+    void mergeSelectedBlocks(GameObject other, Block block)
+    {
+        block.merge(other);
+        enableBoxCollider();
         draggingObject = null;
     }
 
     //Restore object to original position when right clicked
-    void restoreObject(GameObject val, Vector3 restorePoint)
+    void restoreObject(GameObject val)
     {
-        val.transform.position = restorePoint;
-        val.GetComponent<BoxCollider>().enabled = true;
+        val.GetComponent<Block>().setPosition();
+        enableBoxCollider();
         draggingObject = null;
     }
 
     //Setup loaded blocks to docks
-    public int placeLoadedBlocks(string data)
+    public int[] placeLoadedBlocks(string data)
     {
         int val = 0;
+        int maxVal = 1;
         string[] temp = data.Split('/');
         for (int i = 0; i < temp.Length - 1; i++)
         {
             string[] vals = temp[i].Split(',');
-            Vector3 pos = new Vector3(0, 0.15f * int.Parse(vals[2]), 0);
-            GameObject inst = Instantiate(cubePrefab, DockGenerator.docks[int.Parse(vals[0]), int.Parse(vals[1])].transform.GetChild(0));
-            inst.transform.position = inst.transform.parent.transform.position + pos;
-            inst.GetComponent<Block>().loadFromSave(int.Parse(vals[2]));
+            if (int.Parse(vals[2]) > maxVal) maxVal = int.Parse(vals[2]);
             val += int.Parse(vals[2]);
-            PointGeneration.blocks.Add(inst.GetComponent<Block>());
+            placeBlockWithLevel(int.Parse(vals[0]), int.Parse(vals[1]), int.Parse(vals[2]));
         }
-        draggingObject = null;
-        return val;
+        return new int[] { val, maxVal };
     }
+
+    //Place block with given level to given spawn point
+    private static bool placeBlockWithLevel(int i, int j, int level)
+    {
+        if (DockGenerator.spawnPoints[i, j].transform.childCount == 0)
+        {
+            GameObject inst = Instantiate(startingPrefab, DockGenerator.spawnPoints[i, j].transform);
+            inst.GetComponent<Block>().loadFromSave(level);
+            PointGeneration.blocks.Add(inst.GetComponent<Block>());
+            return true;
+        }
+        else return false;
+    }
+
+    //Place block when buyed if there is an empty dock else return false
+    public static bool placeBuyedBlock(int level)
+    {
+        for (int i = 0; i < DockGenerator.spawnPoints.GetLength(0); i++)
+        {
+            for (int j = 0; j < DockGenerator.spawnPoints.GetLength(1); j++)
+            {
+                if (DockGenerator.spawnPoints[i, j].transform.childCount == 0)
+                {
+                    bool output = placeBlockWithLevel(i, j, level);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    //Disable box collider for dragging
     void disableBoxCollider()
     {
         draggingObject.GetComponent<BoxCollider>().enabled = false;
     }
 
+
+    //Enable box collider when dropped
     void enableBoxCollider()
     {
         draggingObject.GetComponent<BoxCollider>().enabled = true;

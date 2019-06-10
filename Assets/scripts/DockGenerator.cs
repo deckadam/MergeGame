@@ -11,6 +11,7 @@ public class DockGenerator : MonoBehaviour
     public static GameObject[,] spawnPoints;
     
 
+    //Generate dock objects and set them to array for checking when trying to instantiate or placing blocks
     void Start()
     {
         docks = new GameObject[4, 4];
@@ -24,10 +25,5 @@ public class DockGenerator : MonoBehaviour
                 spawnPoints[i, j] = docks[i, j].transform.GetChild(0).gameObject;
             }
         }
-    }
-
-    void Update()
-    {
-
     }
 }
