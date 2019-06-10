@@ -1044,6 +1044,8 @@ MonoBehaviour:
   mainCamera: {fileID: 791957719}
   cubePrefab: {fileID: 8791196007444401084, guid: 031f15d02362d86499a5cac8fd3ddf0b,
     type: 3}
+  normalMaterial: {fileID: 2100000, guid: ef8222e2602594946a202858e00ab070, type: 2}
+  highlightedMaterial: {fileID: 2100000, guid: d6f2a072ca876cb42b27c919e296cf0d, type: 2}
 --- !u!114 &1079344885
 MonoBehaviour:
   m_ObjectHideFlags: 0

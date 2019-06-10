@@ -7,6 +7,10 @@ public class ObjectPlacement : MonoBehaviour
     private Camera mainCamera;
     [SerializeField]
     private GameObject cubePrefab;
+    [SerializeField]
+    private Material normalMaterial;
+    [SerializeField]
+    private Material highlightedMaterial;
 
     private static GameObject startingPrefab;
 
@@ -22,6 +26,8 @@ public class ObjectPlacement : MonoBehaviour
 
     void Update()
     {
+        //Highlight docks with changing material to show merge options
+        highlightDocks();
         //Drag selected object
         if (draggingObject != null)
         {
@@ -40,6 +46,35 @@ public class ObjectPlacement : MonoBehaviour
         {
             //Planting and merging operations
             processRaycast(hit);
+        }
+    }
+
+
+    //Change material of the docks according to dragging object and child blocks level
+    private void highlightDocks()
+    {
+        for (int i = 0; i < DockGenerator.dockRenderer.GetLength(0); i++)
+        {
+            for (int j = 0; j < DockGenerator.dockRenderer.GetLength(1); j++)
+            {
+                MeshRenderer temp = DockGenerator.dockRenderer[i, j];
+                if (draggingObject != null && DockGenerator.docks[i, j].transform.GetChild(0).transform.childCount != 0)
+                {
+                    Block current = DockGenerator.docks[i, j].transform.GetChild(0).transform.GetChild(0).GetComponent<Block>();
+                    if (current != draggingObject.GetComponent<Block>() && current.level == draggingObject.GetComponent<Block>().level)
+                    {
+                        temp.material = highlightedMaterial;
+                    }
+                    else
+                    {
+                        temp.material = normalMaterial;
+                    }
+                }
+                else
+                {
+                    temp.material = normalMaterial;
+                }
+            }
         }
     }
 

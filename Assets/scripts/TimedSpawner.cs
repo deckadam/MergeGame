@@ -49,11 +49,7 @@ public class TimedSpawner : MonoBehaviour
         fillImage.fillAmount = fillAmount;
     }
 
-    public static void refillButton()
-    {
-        fillAmount = 1.0f;
-    }
-
+    //When clicked to spawn button increment the current value by 10 percent
     public void incrementFillAmount()
     {
         fillAmount += 0.1f;
