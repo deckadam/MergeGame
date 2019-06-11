@@ -1,16 +1,26 @@
 ﻿using UnityEngine;
+using TMPro;
 
 public class Block : MonoBehaviour
 {
-    public int level;
+    public int level=1;
     public float scaleMultiplier;
     private ParticleSystem pSystem;
+    private TextMeshPro textPro;
 
     //Set variables and position itself on the parent object
     private void Start()
     {
         pSystem = gameObject.GetComponent<ParticleSystem>();
         setPosition();
+        textPro = gameObject.GetComponent<TextMeshPro>();
+    }
+
+    private void ifEmpty()
+    {
+        if(textPro == null){
+            textPro = gameObject.GetComponent<TextMeshPro>();
+        }
     }
 
     //Check if it is possible to merge with the sended object
@@ -36,36 +46,28 @@ public class Block : MonoBehaviour
             BuyMenu.maxLevelReached = level;
             BuyMenu.updateButtons();
         }
+        textPro.text = level.ToString();
     }
 
     //Set the block to loaded level
     public void loadFromSave(int level)
     {
         this.level = level;
-        levelUpBlock(level - 1);
+        levelUpBlock(level);
     }
 
     //Level up the block to certain level and set position again for matching the parent
     private void levelUpBlock(int level)
     {
-        for (int i = 0; i < level; i++)
-        {
-            transform.localScale *= scaleMultiplier;
-        }
-        setPosition();
-
+        ifEmpty();
+        textPro.text = level.ToString();
     }
 
 
     //Position itself on top of the parent dock for visual purpose
     public void setPosition()
     {
-        float yPos = 0.15f;
-        for (int i = 0; i < this.level; i++)
-        {
-            yPos *= 1.2f;
-        }
-        Vector3 newPosition = new Vector3(0, yPos, 0);
-        gameObject.transform.position = gameObject.transform.parent.transform.position + newPosition;
+        gameObject.transform.localPosition = new Vector3(0, 0, 0);
+        gameObject.transform.rotation = Quaternion.LookRotation(gameObject.transform.position - Camera.main.transform.position);
     }
 }
